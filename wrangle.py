@@ -58,5 +58,5 @@ def wrangle_telco():
     return: train, validate, and test sets of telco data
     '''
     df = clean_telco(get_telco_charges())
-    df = train_validate_test_split(df)
+    train_validate_test_split(df)
     return

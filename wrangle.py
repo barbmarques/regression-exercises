@@ -32,7 +32,7 @@ def clean_telco(df):
     df.total_charges=pd.to_numeric(df.total_charges, errors='coerce').astype('float64')
     return df
 
-def train_validate_test_split(df, seed=123):
+def train_validate_test_split(df, target, seed=123):
     
     '''
     This function splits the telco data into train, 
@@ -46,8 +46,40 @@ def train_validate_test_split(df, seed=123):
         train_and_validate,
         test_size=0.3,
         random_state=seed)
-    return train, validate, test
+    
+    # split train into X (dataframe, drop target) & y (series, keep target only)
+    X_train = train.drop(columns=[target])
+    y_train = train[target]
+    
+    # split validate into X (dataframe, drop target) & y (series, keep target only)
+    X_validate = validate.drop(columns=[target])
+    y_validate = validate[target]
+    
+    # split test into X (dataframe, drop target) & y (series, keep target only)
+    X_test = test.drop(columns=[target])
+    y_test = test[target]
 
+    return X_train, y_train, X_validate, y_validate, X_test, y_test
+
+def create_dummies(df, object_cols):
+    '''
+    This function takes in a dataframe and list of object column names,
+    and creates dummy variables of each of those columns. 
+    It then appends the dummy variables to the original dataframe. 
+    It returns the original df with the appended dummy variables. 
+    '''
+    
+    # run pd.get_dummies() to create dummy vars for the object columns. 
+    # we will drop the column representing the first unique value of each variable
+    # we will opt to not create na columns for each variable with missing values 
+    # (all missing values have been removed.)
+    dummy_df = pd.get_dummies(object_cols, dtype=int)
+    
+    # concatenate the dataframe with dummies to our original dataframe
+    # via column (axis=1)
+    df = pd.concat([df, dummy_df], axis=1)
+
+    return df
 
 def wrangle_telco():
     '''
@@ -58,5 +90,4 @@ def wrangle_telco():
     return: train, validate, and test sets of telco data
     '''
     df = clean_telco(get_telco_charges())
-    train_validate_test_split(df)
-    return
+    return train_validate_test_split(df)
